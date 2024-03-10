@@ -10,10 +10,11 @@ class RouterLocationAnalyzer
       data = fetch_data
       routers = data['routers']
       locations = data['locations']
-
+      puts routers
+      puts locations
       routers.each do |router|
         location_id = router['location_id']
-        links = router['links']
+        links = router['router_links']
 
         location_name = locations.find { |loc| loc['id'] == location_id }['name']
         links.each do |linked_router_id|
