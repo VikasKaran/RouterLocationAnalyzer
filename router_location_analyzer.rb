@@ -2,7 +2,6 @@ require 'net/http'
 require 'json'
 
 class RouterLocationAnalyzer
-  # For actual application, move this to .env as an environment variable.
   API_URL = URI('https://my-json-server.typicode.com/marcuzh/router_location_test_api/db')
 
   def analyze_connections
@@ -10,16 +9,12 @@ class RouterLocationAnalyzer
       data = fetch_data
       routers = data['routers']
       locations = data['locations']
-      puts routers
-      puts locations
-      routers.each do |router|
-        location_id = router['location_id']
-        links = router['router_links']
 
-        location_name = locations.find { |loc| loc['id'] == location_id }['name']
-        links.each do |linked_router_id|
+      routers.each do |router|
+        location_name = find_location_name(locations, router['location_id'])
+        router['router_links'].each do |linked_router_id|
           linked_location_id = routers.find { |r| r['id'] == linked_router_id }['location_id']
-          linked_location_name = locations.find { |loc| loc['id'] == linked_location_id }['name']
+          linked_location_name = find_location_name(locations, linked_location_id)
           add_connection(location_name, linked_location_name)
         end
       end
@@ -31,7 +26,7 @@ class RouterLocationAnalyzer
   def print_connections
     @locations.each do |location, connections|
       connections.uniq.each do |connected_location|
-        puts "#{location} <-> #{connected_location}" if location != connected_location
+        puts "#{location} <-> #{connected_location}"
       end
     end
   end
@@ -54,12 +49,18 @@ class RouterLocationAnalyzer
     @locations = {}
   end
 
+  def find_location_name(locations, location_id)
+    location = locations.find { |loc| loc['id'] == location_id }['name']
+  end
+
   def add_connection(location1, location2)
     @locations[location1] ||= []
-    @locations[location1] << location2
-
     @locations[location2] ||= []
-    @locations[location2] << location1
+
+    if location1 != location2
+      @locations[location1] << location2 unless @locations[location1].include?(location2)    
+      @locations[location2] << location1 unless @locations[location2].include?(location1)
+    end
   end
 end
 

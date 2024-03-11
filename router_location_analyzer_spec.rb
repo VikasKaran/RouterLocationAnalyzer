@@ -46,14 +46,14 @@ RSpec.describe RouterLocationAnalyzer do
         analyzer = RouterLocationAnalyzer.new
         analyzer.analyze_connections
         expect(analyzer.instance_variable_get(:@locations)).to eq({
-          'Adastral' => ['London'],
-          'London' => ['Adastral'],
-          'Winterbourne House' => ['Lancaster University', 'Lancaster Castle'],
-          'Lancaster Brewery' => ['Lancaster Brewery'],
-          'Lancaster University' => ['Winterbourne House', 'Lancaster Castle'],
-          'Williamson Park' => [],
-          'Lancaster Castle' => ['Winterbourne House', 'Lancaster University'],
-          'Loughborough University' => []
+          'Adastral' => [],
+          'London' => ['Williamson Park'],
+          'Winterbourne House' => [],
+          'Lancaster Brewery' => ['Loughborough University', 'Lancaster University'],
+          'Lancaster University' => ['Lancaster Brewery'],
+          'Williamson Park' => ['London'],
+          'Lancaster Castle' => ['Loughborough University'],
+          'Loughborough University' => ['Lancaster Brewery', 'Lancaster Castle']
         })
       end
     end
