@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 require_relative 'router_location_analyzer'
 require 'rspec'
 require 'webmock/rspec'
@@ -7,15 +9,15 @@ RSpec.describe RouterLocationAnalyzer do
     it 'adds a connection between two locations' do
       analyzer = RouterLocationAnalyzer.new
       analyzer.send(:add_connection, 'Adastral', 'London')
-      expect(analyzer.instance_variable_get(:@locations)).to eq({'Adastral' => ['London'], 'London' => ['Adastral']})
+      expect(analyzer.instance_variable_get(:@locations)).to eq({ 'Adastral' => ['London'], 'London' => ['Adastral'] })
     end
   end
 
   describe '#analyze_connections' do
     context 'when API response is successful' do
       it 'correctly analyzes connections between locations' do
-        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db').
-          to_return(body: {
+        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db')
+          .to_return(body: {
             routers: [
               { id: 1, name: 'citadel-01', location_id: 1, router_links: [1] },
               { id: 2, name: 'citadel-02', location_id: 1, router_links: [] },
@@ -42,26 +44,28 @@ RSpec.describe RouterLocationAnalyzer do
               { id: 8, name: 'Loughborough University' }
             ]
           }.to_json)
-        
+
         analyzer = RouterLocationAnalyzer.new
         analyzer.analyze_connections
         expect(analyzer.instance_variable_get(:@locations)).to eq({
-          'Adastral' => [],
-          'London' => ['Williamson Park'],
-          'Winterbourne House' => [],
-          'Lancaster Brewery' => ['Loughborough University', 'Lancaster University'],
-          'Lancaster University' => ['Lancaster Brewery'],
-          'Williamson Park' => ['London'],
-          'Lancaster Castle' => ['Loughborough University'],
-          'Loughborough University' => ['Lancaster Brewery', 'Lancaster Castle']
-        })
+                                                                    'Adastral' => [],
+                                                                    'London' => ['Williamson Park'],
+                                                                    'Winterbourne House' => [],
+                                                                    'Lancaster Brewery' => ['Loughborough University',
+                                                                                            'Lancaster University'],
+                                                                    'Lancaster University' => ['Lancaster Brewery'],
+                                                                    'Williamson Park' => ['London'],
+                                                                    'Lancaster Castle' => ['Loughborough University'],
+                                                                    'Loughborough University' => ['Lancaster Brewery',
+                                                                                                  'Lancaster Castle']
+                                                                  })
       end
     end
 
     context 'when API response times out' do
       it 'raises an error' do
-        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db').
-          to_timeout
+        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db')
+          .to_timeout
 
         analyzer = RouterLocationAnalyzer.new
         expect { analyzer.analyze_connections }.to raise_error(StandardError, 'Request to API timed out')
@@ -70,19 +74,22 @@ RSpec.describe RouterLocationAnalyzer do
 
     context 'when API response is not successful' do
       it 'raises an error' do
-        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db').
-          to_return(status: 500)
+        stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db')
+          .to_return(status: 500)
 
         analyzer = RouterLocationAnalyzer.new
-        expect { analyzer.analyze_connections }.to raise_error(StandardError, 'Failed to fetch data from the API. HTTP status code: 500')
+        expect do
+          analyzer.analyze_connections
+        end.to raise_error(StandardError,
+                           'Failed to fetch data from the API. HTTP status code: 500')
       end
     end
   end
 
   describe '#fetch_data' do
     it 'correctly fetches data from the API' do
-      stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db').
-        to_return(body: {
+      stub_request(:get, 'https://my-json-server.typicode.com/marcuzh/router_location_test_api/db')
+        .to_return(body: {
           routers: [
             { id: 1, location_id: 1, router_links: [2] },
             { id: 2, location_id: 2, router_links: [1] }
@@ -92,19 +99,19 @@ RSpec.describe RouterLocationAnalyzer do
             { id: 2, name: 'London' }
           ]
         }.to_json)
-      
+
       analyzer = RouterLocationAnalyzer.new
       data = analyzer.send(:fetch_data)
       expect(data).to eq({
-        'routers' => [
-          {'id' => 1, 'location_id' => 1, 'router_links' => [2]},
-          {'id' => 2, 'location_id' => 2, 'router_links' => [1]}
-        ],
-        'locations' => [
-          {'id' => 1, 'name' => 'Adastral'},
-          {'id' => 2, 'name' => 'London'}
-        ]
-      })
+                           'routers' => [
+                             { 'id' => 1, 'location_id' => 1, 'router_links' => [2] },
+                             { 'id' => 2, 'location_id' => 2, 'router_links' => [1] }
+                           ],
+                           'locations' => [
+                             { 'id' => 1, 'name' => 'Adastral' },
+                             { 'id' => 2, 'name' => 'London' }
+                           ]
+                         })
     end
   end
 end
